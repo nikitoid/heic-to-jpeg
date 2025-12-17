@@ -14,33 +14,3 @@ root.render(
     <App />
   </React.StrictMode>
 );
-
-// PWA / Service Worker Registration
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js').then((registration) => {
-      console.log('SW registered: ', registration);
-
-      // Check for updates
-      registration.addEventListener('updatefound', () => {
-        const newWorker = registration.installing;
-        if (newWorker) {
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // New content is available; please refresh.
-              // We force the update immediately per requirements
-              newWorker.postMessage({ action: 'skipWaiting' });
-            }
-          });
-        }
-      });
-    }).catch((registrationError) => {
-      console.log('SW registration failed: ', registrationError);
-    });
-
-    // Ensure page reloads when controller changes (immediate update applied)
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      window.location.reload();
-    });
-  });
-}
