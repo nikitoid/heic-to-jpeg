@@ -8,7 +8,7 @@
     <meta name="theme-color" content="#09090b" />
     <meta name="description" content="Офлайн PWA конвертер HEIC в JPEG" />
 
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS (CDN is kept for simplicity to match existing config logic) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -37,25 +37,6 @@
               }
             }
           }
-        }
-      }
-    </script>
-
-    <!-- Import Map for React and Libraries -->
-    <script type="importmap">
-      {
-        "imports": {
-          "react": "https://esm.sh/react@18.2.0",
-          "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-          "react/": "https://esm.sh/react@18.2.0/",
-          "react-dom/": "https://esm.sh/react-dom@18.2.0/",
-          "framer-motion": "https://esm.sh/framer-motion@10.16.4?deps=react@18.2.0,react-dom@18.2.0",
-          "lucide-react": "https://esm.sh/lucide-react@0.292.0?deps=react@18.2.0",
-          "clsx": "https://esm.sh/clsx@2.0.0",
-          "tailwind-merge": "https://esm.sh/tailwind-merge@2.0.0",
-          "heic2any": "https://esm.sh/heic2any@0.0.4",
-          "jszip": "https://esm.sh/jszip@3.10.1",
-          "file-saver": "https://esm.sh/file-saver@2.0.5"
         }
       }
     </script>
@@ -96,8 +77,28 @@
         background: #3f3f46; 
       }
     </style>
-  </head>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.561.0",
+    "framer-motion": "https://esm.sh/framer-motion@^12.23.26",
+    "clsx": "https://esm.sh/clsx@^2.1.1",
+    "jszip": "https://esm.sh/jszip@^3.10.1",
+    "vite": "https://esm.sh/vite@^7.3.0",
+    "tailwind-merge": "https://esm.sh/tailwind-merge@^3.4.0",
+    "file-saver": "https://esm.sh/file-saver@^2.0.5",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
+    "heic2any": "https://esm.sh/heic2any@^0.0.4"
+  }
+}
+</script>
+</head>
   <body class="bg-dark text-textMain h-screen overflow-hidden antialiased selection:bg-primary selection:text-white">
     <div id="root" class="h-full flex flex-col relative z-10"></div>
+    <!-- Entry Point for Vite -->
+    <script type="module" src="/index.tsx"></script>
   </body>
 </html>

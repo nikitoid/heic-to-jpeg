@@ -1,28 +1,30 @@
 {
-  "name": "heic-to-jpeg-pro",
+  "name": "heic-converter-pro",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "tsc && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "framer-motion": "10.16.4",
-    "lucide-react": "0.292.0",
-    "clsx": "2.0.0",
-    "tailwind-merge": "2.0.0",
-    "heic2any": "0.0.4",
-    "jszip": "3.10.1",
-    "file-saver": "2.0.5"
+    "clsx": "^2.0.0",
+    "file-saver": "^2.0.5",
+    "framer-motion": "^10.16.4",
+    "heic2any": "^0.0.4",
+    "jszip": "^3.10.1",
+    "lucide-react": "^0.292.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwind-merge": "^2.0.0"
   },
   "devDependencies": {
-    "@types/node": "^22.14.0",
-    "@vitejs/plugin-react": "^5.0.0",
-    "typescript": "~5.8.2",
-    "vite": "^6.2.0"
+    "@types/file-saver": "^2.0.5",
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "@vitejs/plugin-react": "^4.0.3",
+    "typescript": "^5.0.2",
+    "vite": "^4.4.5"
   }
 }
