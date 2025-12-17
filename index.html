@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="https://picsum.photos/32/32" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>HEIC to JPEG Pro</title>
+    <meta name="theme-color" content="#09090b" />
+    <meta name="description" content="Офлайн PWA конвертер HEIC в JPEG" />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              // Using CSS variables with <alpha-value> support
+              primary: 'rgb(var(--color-primary) / <alpha-value>)', 
+              primaryDark: 'rgb(var(--color-primary-dark) / <alpha-value>)',
+              dark: 'rgb(var(--color-bg) / <alpha-value>)',
+              surface: 'rgb(var(--color-surface) / <alpha-value>)',
+              surfaceHighlight: 'rgb(var(--color-surface-highlight) / <alpha-value>)',
+              
+              textMain: '#fafafa',
+              textMuted: '#a1a1aa',
+            },
+            animation: {
+              'blob': 'blob 7s infinite',
+            },
+            keyframes: {
+              blob: {
+                '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                '100%': { transform: 'translate(0px, 0px) scale(1)' },
+              }
+            }
+          }
+        }
+      }
+    </script>
+
+    <!-- Import Map for React and Libraries -->
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@18.2.0",
+          "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+          "react/": "https://esm.sh/react@18.2.0/",
+          "react-dom/": "https://esm.sh/react-dom@18.2.0/",
+          "framer-motion": "https://esm.sh/framer-motion@10.16.4?deps=react@18.2.0,react-dom@18.2.0",
+          "lucide-react": "https://esm.sh/lucide-react@0.292.0?deps=react@18.2.0",
+          "clsx": "https://esm.sh/clsx@2.0.0",
+          "tailwind-merge": "https://esm.sh/tailwind-merge@2.0.0",
+          "heic2any": "https://esm.sh/heic2any@0.0.4",
+          "jszip": "https://esm.sh/jszip@3.10.1",
+          "file-saver": "https://esm.sh/file-saver@2.0.5"
+        }
+      }
+    </script>
+
+    <!-- PWA Manifest (Inline Data URI for simplicity in this format) -->
+    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIkhFSUMgQ29udmVydGVyIFBybyIsCiAgInNob3J0X25hbWUiOiAiSEVJQzJKUEVHIiwKICAic3RhcnRfdXJsIjogIi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMwOTA5MGIiLAogICJpY29ucyI6IFtdCn0=" />
+    
+    <style>
+      :root {
+        /* Default Fallback Colors */
+        --color-primary: 139 92 246;
+        --color-primary-dark: 124 58 237;
+        --color-bg: 9 9 11;
+        --color-surface: 24 24 27;
+        --color-surface-highlight: 39 39 42;
+      }
+
+      /* Hide scrollbar for gallery but keep functionality */
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      /* Modern Glass Scrollbar for main window if visible */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: rgb(var(--color-bg)); 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgb(var(--color-surface-highlight)); 
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #3f3f46; 
+      }
+    </style>
+  </head>
+  <body class="bg-dark text-textMain h-screen overflow-hidden antialiased selection:bg-primary selection:text-white">
+    <div id="root" class="h-full flex flex-col relative z-10"></div>
+  </body>
+</html>

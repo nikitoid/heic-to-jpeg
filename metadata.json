@@ -1,0 +1,5 @@
+{
+  "name": "HEIC to JPEG Pro",
+  "description": "Мощный PWA конвертер HEIC в JPEG с возможностью работы офлайн, настройкой качества и галереей.",
+  "requestFramePermissions": []
+}
