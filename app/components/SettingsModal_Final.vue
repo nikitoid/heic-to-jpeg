@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { useSettingsStore } from '~/stores/settings'
+import { usePwaUtils } from '~/composables/usePwaUtils'
+
 
 const emit = defineEmits(['close'])
 
@@ -14,6 +16,9 @@ watch(isOpen, (value) => {
 
 const settingsStore = useSettingsStore()
 const { quality, saveMethod, directoryHandle, isDirectorySet } = storeToRefs(settingsStore)
+
+const { canInstall, isInstalled, installPwa, checkForUpdate, isCheckingUpdate } = usePwaUtils()
+
 
 const saveMethodOptions = [
   { value: 'browser', label: 'Скачивание через браузер' },
@@ -104,6 +109,37 @@ const handlePickFolder = async () => {
           <p v-if="!isDirectorySet" class="text-xs text-orange-500">
             ⚠️ Необходимо выбрать папку для работы этого метода
           </p>
+        </div>
+
+        <!-- PWA Settings -->
+        <div class="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+           <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100">Приложение</h4>
+           
+           <div class="grid grid-cols-1 gap-3">
+             <UButton
+               v-if="canInstall"
+               icon="i-heroicons-arrow-down-tray"
+               label="Установить приложение"
+               color="primary"
+               variant="soft"
+               block
+               @click="installPwa"
+             />
+             
+             <UButton
+               icon="i-heroicons-arrow-path"
+               label="Проверить обновления"
+               color="neutral"
+               variant="outline"
+               block
+               :loading="isCheckingUpdate"
+               @click="checkForUpdate"
+             />
+             
+             <p v-if="isInstalled" class="text-xs text-center text-green-500 font-medium">
+               ✓ Приложение установлено
+             </p>
+           </div>
         </div>
       </div>
     </div>
