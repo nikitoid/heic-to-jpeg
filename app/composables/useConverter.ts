@@ -9,7 +9,17 @@ export const useConverter = () => {
     const currentProcessingId = ref<string | null>(null)
     const settingsStore = useSettingsStore()
 
-    const addFiles = (files: File[]) => {
+    const addFiles = async (files: File[]) => {
+        // If auto-save to FS is enabled, check permissions UPFRONT
+        // This must be done here, synchronously after the user interaction (file dro/pick)
+        if (settingsStore.saveMethod === 'fs' && settingsStore.directoryHandle) {
+            const hasPermission = await settingsStore.verifyPermission(true)
+            if (!hasPermission) {
+                useToast().add({ title: 'Ошибка доступа', description: 'Необходимо разрешить доступ к папке для сохранения.', color: 'error' })
+                return
+            }
+        }
+
         const newImages: ConvertedImage[] = files.map(file => ({
             id: crypto.randomUUID(),
             file,
@@ -59,10 +69,11 @@ export const useConverter = () => {
             pendingImage.status = 'done'
             pendingImage.url = URL.createObjectURL(blob)
 
-            // Auto-save removed as per user request
-            // if (settingsStore.saveMethod === 'fs' && settingsStore.directoryHandle) {
-            //     await saveToDirectory(settingsStore.directoryHandle, pendingImage.originalName, blob)
-            // }
+            // Auto-save logic
+            if (settingsStore.saveMethod === 'fs' && settingsStore.directoryHandle) {
+                await saveToDirectory(settingsStore.directoryHandle, pendingImage.originalName, blob)
+                useToast().add({ title: 'Сохранено', description: `Файл ${pendingImage.originalName.replace(/\.heic$/i, '.jpg')} сохранен`, color: 'success' })
+            }
 
         } catch (error) {
             console.error('Conversion failed', error)
@@ -82,11 +93,9 @@ export const useConverter = () => {
                 return
             }
 
-            // Verify permission before attempting to access the file system
-            const hasPermission = await settingsStore.verifyPermission(true)
-            if (!hasPermission) {
-                throw new Error('Нет прав доступа к папке. Пожалуйста, выберите папку снова или разрешите доступ.')
-            }
+            // Permission is verified upfront in addFiles or saveSingleImage
+            // Double check is safe but we rely on the implementation plan to do it early.
+            // However, verifyPermission(true) is safe to call again if granted.
 
             const newName = originalName.replace(/\.heic$/i, '.jpg')
             const fileHandle = await dirHandle.getFileHandle(newName, { create: true })
@@ -106,6 +115,10 @@ export const useConverter = () => {
         if (image.status !== 'done' || !image.blob) return
 
         if (settingsStore.saveMethod === 'fs' && settingsStore.directoryHandle) {
+            // Verify permission before saving single file manually
+            const hasPermission = await settingsStore.verifyPermission(true)
+            if (!hasPermission) return
+
             await saveToDirectory(settingsStore.directoryHandle, image.originalName, image.blob)
             useToast().add({ title: 'Сохранено', description: `Файл ${image.originalName.replace(/\.heic$/i, '.jpg')} сохранен в папку`, color: 'primary', duration: 2000 })
         } else {

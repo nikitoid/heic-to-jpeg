@@ -13,7 +13,7 @@ watch(localQuality, (newVal) => {
   settingsStore.quality = newVal
 })
 
-const { images, addFiles, removeImage, saveSingleImage } = useConverter()
+const { images, addFiles, removeImage, saveSingleImage, isProcessing } = useConverter()
 
 const onFileChange = (e: Event) => {
   const input = e.target as HTMLInputElement
@@ -29,14 +29,14 @@ const onDrop = (e: DragEvent) => {
   }
 }
 
-const handleFiles = (newFiles: File[]) => {
+const handleFiles = async (newFiles: File[]) => {
   const heicFiles = newFiles.filter(f => f.name.toLowerCase().endsWith('.heic'))
   if (heicFiles.length === 0) {
     // Show toast
     useToast().add({ title: 'Нет HEIC файлов', description: 'Пожалуйста, выберите файлы с расширением .heic', color: 'error' })
     return
   }
-  addFiles(heicFiles)
+  await addFiles(heicFiles)
 }
 
 const triggerFileInput = () => {

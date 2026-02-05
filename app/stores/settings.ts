@@ -44,7 +44,10 @@ export const useSettingsStore = defineStore('settings', () => {
     // Установка новой директории
     const setDirectoryHandle = async () => {
         try {
-            const handle = await window.showDirectoryPicker()
+            // Explicitly request readwrite access when picking the folder
+            const handle = await window.showDirectoryPicker({
+                mode: 'readwrite'
+            })
             directoryHandle.value = handle
             isDirectorySet.value = true
             await set('directoryHandle', handle)
