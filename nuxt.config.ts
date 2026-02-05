@@ -26,7 +26,8 @@ export default defineNuxtConfig({
         { name: 'description', content: 'Convert HEIC images to JPEG offline in your browser.' }
       ],
       link: [
-        { rel: 'icon', type: 'image/png', href: '/favicon.png' }
+        { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' }
       ]
     }
   },
@@ -43,13 +44,20 @@ export default defineNuxtConfig({
       start_url: '/',
       icons: [
         {
-          src: 'pwa-192x192.png',
+          src: 'web-app-manifest-192x192.png',
           sizes: '192x192',
-          type: 'image/png'
+          type: 'image/png',
+          purpose: 'any maskable'
         },
         {
-          src: 'pwa-512x512.png',
+          src: 'web-app-manifest-512x512.png',
           sizes: '512x512',
+          type: 'image/png',
+          purpose: 'any maskable'
+        },
+        {
+          src: 'favicon-96x96.png',
+          sizes: '96x96',
           type: 'image/png'
         }
       ]

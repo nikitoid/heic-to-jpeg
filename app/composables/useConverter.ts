@@ -76,14 +76,23 @@ export const useConverter = () => {
 
     const saveToDirectory = async (dirHandle: FileSystemDirectoryHandle, originalName: string, blob: Blob) => {
         try {
+            if (!blob || blob.size === 0) {
+                console.error('Blob is empty, cannot save')
+                useToast().add({ title: 'Ошибка', description: 'Файл пуст', color: 'error' })
+                return
+            }
+
             const newName = originalName.replace(/\.heic$/i, '.jpg')
             const fileHandle = await dirHandle.getFileHandle(newName, { create: true })
             const writable = await fileHandle.createWritable()
-            await writable.write(blob)
+
+            // Explicitly convert to ArrayBuffer to ensure data is written correctly
+            const arrayBuffer = await blob.arrayBuffer()
+            await writable.write(arrayBuffer)
             await writable.close()
         } catch (e) {
             console.error('Failed to save to FS', e)
-            // Could set a warning flag on the image
+            useToast().add({ title: 'Ошибка сохранения', description: (e as Error).message, color: 'error' })
         }
     }
 
