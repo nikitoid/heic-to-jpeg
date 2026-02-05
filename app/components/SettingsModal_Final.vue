@@ -17,7 +17,7 @@ watch(isOpen, (value) => {
 const settingsStore = useSettingsStore()
 const { quality, saveMethod, directoryHandle, isDirectorySet } = storeToRefs(settingsStore)
 
-const { canInstall, isInstalled, installPwa, checkForUpdate, isCheckingUpdate } = usePwaUtils()
+const { canInstall, isInstalled, installPwa, checkForUpdate, isCheckingUpdate, isUpdateAvailable, installUpdate } = usePwaUtils()
 
 
 const saveMethodOptions = [
@@ -127,6 +127,18 @@ const handlePickFolder = async () => {
              />
              
              <UButton
+               v-if="isUpdateAvailable"
+               icon="i-heroicons-arrow-path"
+               label="Обновить"
+               color="primary"
+               variant="solid"
+               block
+               :loading="isCheckingUpdate"
+               @click="installUpdate"
+             />
+
+             <UButton
+               v-else
                icon="i-heroicons-arrow-path"
                label="Проверить обновления"
                color="neutral"

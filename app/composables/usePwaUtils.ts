@@ -41,46 +41,48 @@ export const usePwaUtils = () => {
         }
     }
 
-    // Update check
+    // Update check logic
     const isUpdateAvailable = ref(false)
     const isCheckingUpdate = ref(false)
 
-    // Setup initial state from $pwa if available
-    if ($pwa) {
-        isUpdateAvailable.value = $pwa.needRefresh
+    // Ensure we are client-side before using $pwa
+    if (import.meta.client && $pwa) {
+        // Sync reactive state with $pwa.needRefresh
+        // needRefresh is a ref provided by @vite-pwa/nuxt
+        watch(() => $pwa.needRefresh, (val) => {
+            isUpdateAvailable.value = val
+        }, { immediate: true })
     }
 
     const checkForUpdate = async () => {
-        if (!$pwa) {
+        if (!import.meta.client || !$pwa) {
             useToast().add({ title: 'PWA не активен', description: 'Сервис-воркер не найден или вы в режиме разработки.', color: 'info' })
             return
         }
 
         isCheckingUpdate.value = true
         try {
-            await $pwa.updateServiceWorker(true) // Force update check
-            // Note: If update is found, registerType: 'autoUpdate' usually handles it,
-            // or needRefresh becomes true if configured differently.
-            // With autoUpdate, the page usually reloads automatically if configured.
+            // This triggers the browser to check for a new service worker script
+            const registration = await navigator.serviceWorker.ready
+            await registration.update()
 
-            // However, manual check sometimes needs a dedicated method if the plugin exposes it.
-            // The default vite-pwa/nuxt injection is simple.
-            // Let's rely on the registration update.
+            // Note: If an update is found, the 'updatefound' event fires, 
+            // and eventually $pwa.needRefresh should become true if the new SW waits.
+            // With registerType: 'prompt', the new SW should wait.
 
-            if ('serviceWorker' in navigator) {
-                const registration = await navigator.serviceWorker.getRegistration()
-                if (registration) {
-                    await registration.update()
-                    useToast().add({ title: 'Проверка завершена', description: 'Если обновление найдено, оно будет применено.', color: 'success' })
-                } else {
-                    useToast().add({ title: 'Ошибка', description: 'SW Registration not found', color: 'error' })
-                }
-            }
+            useToast().add({ title: 'Проверка завершена', description: 'Если обновление есть, кнопка изменится на "Обновить".', color: 'success' })
         } catch (e) {
             console.error('Update check failed', e)
             useToast().add({ title: 'Ошибка проверки', description: 'Не удалось проверить обновление.', color: 'error' })
         } finally {
             isCheckingUpdate.value = false
+        }
+    }
+
+    const installUpdate = async () => {
+        if (import.meta.client && $pwa) {
+            // This updates the SW and reloads the page (default behavior of updateServiceWorker)
+            await $pwa.updateServiceWorker(true)
         }
     }
 
@@ -90,6 +92,7 @@ export const usePwaUtils = () => {
         installPwa,
         isUpdateAvailable,
         checkForUpdate,
-        isCheckingUpdate
+        isCheckingUpdate,
+        installUpdate
     }
 }

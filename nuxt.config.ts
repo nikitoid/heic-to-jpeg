@@ -33,7 +33,7 @@ export default defineNuxtConfig({
   },
 
   pwa: {
-    registerType: 'autoUpdate',
+    registerType: 'prompt',
     manifest: {
       name: 'HEIC to JPEG Converter',
       short_name: 'heic2jpeg',
