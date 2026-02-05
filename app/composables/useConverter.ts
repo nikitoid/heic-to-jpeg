@@ -12,13 +12,8 @@ export const useConverter = () => {
     const addFiles = async (files: File[]) => {
         // If auto-save to FS is enabled, check permissions UPFRONT
         // This must be done here, synchronously after the user interaction (file dro/pick)
-        if (settingsStore.saveMethod === 'fs' && settingsStore.directoryHandle) {
-            const hasPermission = await settingsStore.verifyPermission(true)
-            if (!hasPermission) {
-                useToast().add({ title: 'Ошибка доступа', description: 'Необходимо разрешить доступ к папке для сохранения.', color: 'error' })
-                return
-            }
-        }
+        // Upfront permission check removed because auto-save is disabled.
+        // Permission will be checked when user clicks "Save" manually.
 
         const newImages: ConvertedImage[] = files.map(file => ({
             id: crypto.randomUUID(),
@@ -69,11 +64,9 @@ export const useConverter = () => {
             pendingImage.status = 'done'
             pendingImage.url = URL.createObjectURL(blob)
 
-            // Auto-save logic
-            if (settingsStore.saveMethod === 'fs' && settingsStore.directoryHandle) {
-                await saveToDirectory(settingsStore.directoryHandle, pendingImage.originalName, blob)
-                useToast().add({ title: 'Сохранено', description: `Файл ${pendingImage.originalName.replace(/\.heic$/i, '.jpg')} сохранен`, color: 'success' })
-            }
+            // Auto-save logic removed as per user request
+            // User must manually click save
+            // useToast().add({ title: 'Готово', description: `Файл ${pendingImage.originalName} конвертирован`, color: 'success' })
 
         } catch (error) {
             console.error('Conversion failed', error)
@@ -107,7 +100,7 @@ export const useConverter = () => {
             await writable.close()
         } catch (e) {
             console.error('Failed to save to FS', e)
-            useToast().add({ title: 'Ошибка сохранения', description: (e as Error).message, color: 'error' })
+            throw e // Re-throw to handle in caller (retry logic)
         }
     }
 
@@ -119,8 +112,28 @@ export const useConverter = () => {
             const hasPermission = await settingsStore.verifyPermission(true)
             if (!hasPermission) return
 
-            await saveToDirectory(settingsStore.directoryHandle, image.originalName, image.blob)
-            useToast().add({ title: 'Сохранено', description: `Файл ${image.originalName.replace(/\.heic$/i, '.jpg')} сохранен в папку`, color: 'primary', duration: 2000 })
+            try {
+                await saveToDirectory(settingsStore.directoryHandle, image.originalName, image.blob)
+                useToast().add({ title: 'Сохранено', description: `Файл ${image.originalName.replace(/\.heic$/i, '.jpg')} сохранен в папку`, color: 'primary', duration: 2000 })
+            } catch (e: any) {
+                // Retry with forced permission if read-only error occurs
+                // This covers the case where permission appears granted but underlying handle is stale/read-only
+                if (e.message && (e.message.includes('read-only') || e.name === 'NotAllowedError')) {
+                    const forcedPermission = await settingsStore.verifyPermission(true, true) // Force request
+                    if (forcedPermission) {
+                        try {
+                            await saveToDirectory(settingsStore.directoryHandle, image.originalName, image.blob)
+                            useToast().add({ title: 'Сохранено', description: `Файл сохранен после обновления прав`, color: 'success' })
+                        } catch (retryError: any) {
+                            useToast().add({ title: 'Ошибка сохранения', description: retryError.message, color: 'error' })
+                        }
+                    } else {
+                        useToast().add({ title: 'Ошибка доступа', description: 'Отказано в доступе к папке', color: 'error' })
+                    }
+                } else {
+                    useToast().add({ title: 'Ошибка сохранения', description: e.message, color: 'error' })
+                }
+            }
         } else {
             // Browser download fallback
             const a = document.createElement('a')

@@ -60,15 +60,15 @@ export const useSettingsStore = defineStore('settings', () => {
     }
 
     // Проверка прав доступа
-    const verifyPermission = async (readWrite = true) => {
+    const verifyPermission = async (readWrite = true, force = false) => {
         if (!directoryHandle.value) return false
 
         const options: FileSystemHandlePermissionDescriptor = {
             mode: readWrite ? 'readwrite' : 'read'
         }
 
-        // Check if permission is already granted
-        if ((await directoryHandle.value.queryPermission(options)) === 'granted') {
+        // Check if permission is already granted (unless forced)
+        if (!force && (await directoryHandle.value.queryPermission(options)) === 'granted') {
             return true
         }
 
