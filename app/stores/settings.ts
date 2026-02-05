@@ -7,6 +7,15 @@ declare global {
     interface Window {
         showDirectoryPicker(options?: any): Promise<FileSystemDirectoryHandle>
     }
+
+    interface FileSystemHandlePermissionDescriptor {
+        mode?: 'read' | 'readwrite'
+    }
+
+    interface FileSystemHandle {
+        queryPermission(descriptor?: FileSystemHandlePermissionDescriptor): Promise<PermissionState>
+        requestPermission(descriptor?: FileSystemHandlePermissionDescriptor): Promise<PermissionState>
+    }
 }
 
 export const useSettingsStore = defineStore('settings', () => {
@@ -47,12 +56,34 @@ export const useSettingsStore = defineStore('settings', () => {
         }
     }
 
+    // Проверка прав доступа
+    const verifyPermission = async (readWrite = true) => {
+        if (!directoryHandle.value) return false
+
+        const options: FileSystemHandlePermissionDescriptor = {
+            mode: readWrite ? 'readwrite' : 'read'
+        }
+
+        // Check if permission is already granted
+        if ((await directoryHandle.value.queryPermission(options)) === 'granted') {
+            return true
+        }
+
+        // Request permission
+        if ((await directoryHandle.value.requestPermission(options)) === 'granted') {
+            return true
+        }
+
+        return false
+    }
+
     return {
         quality,
         saveMethod,
         directoryHandle,
         isDirectorySet,
         initDirectoryHandle,
-        setDirectoryHandle
+        setDirectoryHandle,
+        verifyPermission
     }
 })

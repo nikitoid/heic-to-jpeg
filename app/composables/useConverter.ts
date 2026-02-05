@@ -82,6 +82,12 @@ export const useConverter = () => {
                 return
             }
 
+            // Verify permission before attempting to access the file system
+            const hasPermission = await settingsStore.verifyPermission(true)
+            if (!hasPermission) {
+                throw new Error('Нет прав доступа к папке. Пожалуйста, выберите папку снова или разрешите доступ.')
+            }
+
             const newName = originalName.replace(/\.heic$/i, '.jpg')
             const fileHandle = await dirHandle.getFileHandle(newName, { create: true })
             const writable = await fileHandle.createWritable()
