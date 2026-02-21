@@ -71,7 +71,7 @@ const openLightbox = (index: number) => {
 </script>
 
 <template>
-  <UContainer class="pb-32 sm:pb-12">
+  <UContainer class="pb-32 sm:pb-12" @drop.prevent="onDrop" @dragover.prevent>
     <!-- Hero / Empty State -->
     <div v-if="images.length === 0" class="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-8 animate-in fade-in zoom-in duration-500">
       <div class="space-y-4 max-w-lg mx-auto">

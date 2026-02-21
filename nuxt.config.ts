@@ -17,6 +17,10 @@ export default defineNuxtConfig({
     fonts: false
   },
 
+  icon: {
+    serverBundle: 'local'
+  },
+
   app: {
     head: {
       title: 'HEIC to JPEG Converter',
@@ -63,15 +67,21 @@ export default defineNuxtConfig({
       ]
     },
     workbox: {
-      globPatterns: ['**/*.{js,css,html,png,svg,ico}']
+      globPatterns: ['**/*.{js,css,html,png,svg,ico,woff2,ttf,wasm}']
     },
     client: {
       installPrompt: true,
     },
     devOptions: {
-      enabled: true,
+      enabled: false,
       suppressWarnings: true,
       navigateFallback: '/',
+    }
+  },
+
+  vite: {
+    build: {
+      modulePreload: false
     }
   },
 

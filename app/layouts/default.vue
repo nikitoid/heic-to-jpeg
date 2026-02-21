@@ -9,11 +9,13 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col transition-colors duration-300">
-    <AppHeader />
+  <div class="h-screen flex flex-col transition-colors duration-300 overflow-hidden">
+    <AppHeader class="flex-none" />
     
-    <main class="flex-1 w-full">
+    <main class="flex-1 w-full min-h-0 overflow-y-auto">
       <slot />
     </main>
+
+    <PwaUpdate />
   </div>
 </template>

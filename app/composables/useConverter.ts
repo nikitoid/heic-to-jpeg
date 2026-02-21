@@ -8,6 +8,7 @@ export const useConverter = () => {
     const isProcessing = ref(false)
     const currentProcessingId = ref<string | null>(null)
     const settingsStore = useSettingsStore()
+    const toast = useToast()
 
     const addFiles = async (files: File[]) => {
         // If auto-save to FS is enabled, check permissions UPFRONT
@@ -82,7 +83,7 @@ export const useConverter = () => {
         try {
             if (!blob || blob.size === 0) {
                 console.error('Blob is empty, cannot save')
-                useToast().add({ title: 'Ошибка', description: 'Файл пуст', color: 'error' })
+                toast.add({ title: 'Ошибка', description: 'Файл пуст', color: 'error' })
                 return
             }
 
@@ -114,7 +115,7 @@ export const useConverter = () => {
 
             try {
                 await saveToDirectory(settingsStore.directoryHandle, image.originalName, image.blob)
-                useToast().add({ title: 'Сохранено', description: `Файл ${image.originalName.replace(/\.heic$/i, '.jpg')} сохранен в папку`, color: 'primary', duration: 2000 })
+                toast.add({ title: 'Сохранено', description: `Файл ${image.originalName.replace(/\.heic$/i, '.jpg')} сохранен в папку`, color: 'primary', duration: 2000 })
             } catch (e: any) {
                 // Retry with forced permission if read-only error occurs
                 // This covers the case where permission appears granted but underlying handle is stale/read-only
@@ -123,15 +124,15 @@ export const useConverter = () => {
                     if (forcedPermission) {
                         try {
                             await saveToDirectory(settingsStore.directoryHandle, image.originalName, image.blob)
-                            useToast().add({ title: 'Сохранено', description: `Файл сохранен после обновления прав`, color: 'success' })
+                            toast.add({ title: 'Сохранено', description: `Файл сохранен после обновления прав`, color: 'success' })
                         } catch (retryError: any) {
-                            useToast().add({ title: 'Ошибка сохранения', description: retryError.message, color: 'error' })
+                            toast.add({ title: 'Ошибка сохранения', description: retryError.message, color: 'error' })
                         }
                     } else {
-                        useToast().add({ title: 'Ошибка доступа', description: 'Отказано в доступе к папке', color: 'error' })
+                        toast.add({ title: 'Ошибка доступа', description: 'Отказано в доступе к папке', color: 'error' })
                     }
                 } else {
-                    useToast().add({ title: 'Ошибка сохранения', description: e.message, color: 'error' })
+                    toast.add({ title: 'Ошибка сохранения', description: e.message, color: 'error' })
                 }
             }
         } else {

@@ -1,33 +1,39 @@
+import { ref, computed, watch } from 'vue'
+
+// PWA State as a singleton
+const installPrompt = ref<any>(null)
+const isInstalled = ref(false)
+let isListenerAdded = false
+
+// Check if app is running in standalone mode (PWA)
+const checkIsInstalled = () => {
+    if (import.meta.client) {
+        isInstalled.value = window.matchMedia('(display-mode: standalone)').matches
+    }
+}
+
+if (import.meta.client && !isListenerAdded) {
+    isListenerAdded = true
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault()
+        installPrompt.value = e
+    })
+
+    // Listen for successful install
+    window.addEventListener('appinstalled', () => {
+        installPrompt.value = null
+        checkIsInstalled()
+    })
+
+    checkIsInstalled()
+}
+
 export const usePwaUtils = () => {
     const { $pwa } = useNuxtApp()
+    const toast = useToast()
 
-    // Installation state
-    const installPrompt = ref<any>(null)
     const canInstall = computed(() => !!installPrompt.value)
-    const isInstalled = ref(false) // Simple check if running in standalone mode
-
-    // Check if app is running in standalone mode (PWA)
-    const checkIsInstalled = () => {
-        if (import.meta.client) {
-            isInstalled.value = window.matchMedia('(display-mode: standalone)').matches
-        }
-    }
-
-    // Capture install prompt
-    if (import.meta.client) {
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault()
-            installPrompt.value = e
-        })
-
-        // Listen for successful install
-        window.addEventListener('appinstalled', () => {
-            installPrompt.value = null
-            checkIsInstalled()
-        })
-
-        checkIsInstalled()
-    }
 
     // Trigger installation
     const installPwa = async () => {
@@ -56,7 +62,7 @@ export const usePwaUtils = () => {
 
     const checkForUpdate = async () => {
         if (!import.meta.client || !$pwa) {
-            useToast().add({ title: 'PWA не активен', description: 'Сервис-воркер не найден или вы в режиме разработки.', color: 'info' })
+            toast.add({ title: 'PWA не активен', description: 'Сервис-воркер не найден или вы в режиме разработки.', color: 'info' })
             return
         }
 
@@ -70,10 +76,10 @@ export const usePwaUtils = () => {
             // and eventually $pwa.needRefresh should become true if the new SW waits.
             // With registerType: 'prompt', the new SW should wait.
 
-            useToast().add({ title: 'Проверка завершена', description: 'Если обновление есть, кнопка изменится на "Обновить".', color: 'success' })
+            toast.add({ title: 'Проверка завершена', description: 'Если обновление есть, кнопка изменится на "Обновить".', color: 'success' })
         } catch (e) {
             console.error('Update check failed', e)
-            useToast().add({ title: 'Ошибка проверки', description: 'Не удалось проверить обновление.', color: 'error' })
+            toast.add({ title: 'Ошибка проверки', description: 'Не удалось проверить обновление.', color: 'error' })
         } finally {
             isCheckingUpdate.value = false
         }

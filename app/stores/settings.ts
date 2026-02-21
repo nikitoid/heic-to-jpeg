@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, shallowRef, markRaw } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { get, set } from 'idb-keyval'
 
@@ -24,7 +24,7 @@ export const useSettingsStore = defineStore('settings', () => {
     const saveMethod = useStorage<'browser' | 'fs'>('heic2jpeg-save-method', 'browser')
 
     // Хэндл директории (нельзя сохранить в localStorage, используем IndexedDB)
-    const directoryHandle = ref<FileSystemDirectoryHandle | null>(null)
+    const directoryHandle = shallowRef<FileSystemDirectoryHandle | null>(null)
     const isDirectorySet = ref(false)
 
     // Инициализация хэндла из IDB
@@ -33,7 +33,7 @@ export const useSettingsStore = defineStore('settings', () => {
             const handle = await get<FileSystemDirectoryHandle>('directoryHandle')
             if (handle) {
                 // Проверяем разрешения при необходимости, но пока просто восстанавливаем
-                directoryHandle.value = handle
+                directoryHandle.value = markRaw(handle)
                 isDirectorySet.value = true
             }
         } catch (e) {
@@ -48,7 +48,7 @@ export const useSettingsStore = defineStore('settings', () => {
             const handle = await window.showDirectoryPicker({
                 mode: 'readwrite'
             })
-            directoryHandle.value = handle
+            directoryHandle.value = markRaw(handle)
             isDirectorySet.value = true
             await set('directoryHandle', handle)
         } catch (e) {
