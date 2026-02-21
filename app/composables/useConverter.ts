@@ -95,9 +95,8 @@ export const useConverter = () => {
             const fileHandle = await dirHandle.getFileHandle(newName, { create: true })
             const writable = await fileHandle.createWritable()
 
-            // Explicitly convert to ArrayBuffer to ensure data is written correctly
-            const arrayBuffer = await blob.arrayBuffer()
-            await writable.write(arrayBuffer)
+            // Write blob directly, as converting to ArrayBuffer can cause issues on Android
+            await writable.write(blob)
             await writable.close()
         } catch (e) {
             console.error('Failed to save to FS', e)
@@ -108,10 +107,21 @@ export const useConverter = () => {
     const saveSingleImage = async (image: ConvertedImage) => {
         if (image.status !== 'done' || !image.blob) return
 
+        const fallbackToDownload = () => {
+            const a = document.createElement('a')
+            a.href = image.url!
+            a.download = image.originalName.replace(/\.heic$/i, '.jpg')
+            a.click()
+        }
+
         if (settingsStore.saveMethod === 'fs' && settingsStore.directoryHandle) {
             // Verify permission before saving single file manually
             const hasPermission = await settingsStore.verifyPermission(true)
-            if (!hasPermission) return
+            if (!hasPermission) {
+                toast.add({ title: 'Доступ ограничен', description: 'Нет прав к папке, файл скачан обычно', color: 'warning' })
+                fallbackToDownload()
+                return
+            }
 
             try {
                 await saveToDirectory(settingsStore.directoryHandle, image.originalName, image.blob)
@@ -126,21 +136,23 @@ export const useConverter = () => {
                             await saveToDirectory(settingsStore.directoryHandle, image.originalName, image.blob)
                             toast.add({ title: 'Сохранено', description: `Файл сохранен после обновления прав`, color: 'success' })
                         } catch (retryError: any) {
-                            toast.add({ title: 'Ошибка сохранения', description: retryError.message, color: 'error' })
+                            console.error('Save to directory retry failed:', retryError)
+                            toast.add({ title: 'Ошибка записи', description: 'Файловая система доступна только для чтения (Android ограничение). Использую обычное скачивание.', color: 'warning' })
+                            fallbackToDownload()
                         }
                     } else {
-                        toast.add({ title: 'Ошибка доступа', description: 'Отказано в доступе к папке', color: 'error' })
+                        toast.add({ title: 'Ошибка доступа', description: 'Отказано в доступе к папке. Произведено обычное скачивание.', color: 'warning' })
+                        fallbackToDownload()
                     }
                 } else {
-                    toast.add({ title: 'Ошибка сохранения', description: e.message, color: 'error' })
+                    console.error('Save to directory failed:', e)
+                    toast.add({ title: 'Ошибка сохранения', description: e.message + '. Произведено обычное скачивание.', color: 'warning' })
+                    fallbackToDownload()
                 }
             }
         } else {
             // Browser download fallback
-            const a = document.createElement('a')
-            a.href = image.url!
-            a.download = image.originalName.replace(/\.heic$/i, '.jpg')
-            a.click()
+            fallbackToDownload()
         }
     }
 
